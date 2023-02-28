@@ -15,7 +15,7 @@ library(psych)
 
 ### Data ### 
 
-# Dat file cannot be shared publicly due to legislative reasons 
+# Data cannot be shared publicly due to legislative reasons 
 
 # Factors
 Dat$Group <- factor(Dat$Group, levels = c(4, 7, 8, 1, 3, 2))
@@ -29,36 +29,41 @@ Dat$ALMI <- Dat$DXA_ALM/(Dat$Height/100)^2
 ### Explaining REE in the study sample ###
 
 # Model 1: Fat-free mass (FFM) & fat mass (FM)
-summary(REE_m1 <- lm(REE ~ DXA_FFM + DXA_FM, data = Dat))
+REE_m1 <- lm(REE ~ DXA_FFM + DXA_FM, data = Dat)
+summary(REE_m1)
 confint(REE_m1)
 plot(REE_m1)
 
 # Model 2: FFM, FM and age
-summary(REE_m2 <- lm(REE ~ DXA_FFM + DXA_FM + Age, data = Dat))
+REE_m2 <- lm(REE ~ DXA_FFM + DXA_FM + Age, data = Dat)
+summary(REE_m2)
 confint(REE_m2)
 plot(REE_m2)
 
 # Model 3: FFM, FM, age & appendicular lean mass index (ALMI)
-summary(REE_m3 <- lm(REE ~ DXA_FFM + DXA_FM + Age + ALMI, data = Dat))
+REE_m3 <- lm(REE ~ DXA_FFM + DXA_FM + Age + ALMI, data = Dat)
+summary(REE_m3)
 confint(REE_m3)
 plot(REE_m3)
 
 # Model 4: FFM, FM, age & study period
 Dat$Period <- ifelse(Dat$Study == "CALEX", 1, 0)
-summary(REE_m4 <- lm(REE ~ DXA_FFM + DXA_FM + Age + factor(Period), data = Dat))
+REE_m4 <- lm(REE ~ DXA_FFM + DXA_FM + Age + factor(Period), data = Dat)
+summary(REE_m4)
 plot(REE_m4)
 
 # FFM, FM & appendicular lean mass index (ALMI) adjustted residuals for senitivity analysis
-summary(REE_m_sens <- lm(REE ~ DXA_FFM + DXA_FM + ALMI, data = Dat))
+REE_m_sens <- lm(REE ~ DXA_FFM + DXA_FM + ALMI, data = Dat)
+summary(REE_m_sens)
 plot(REE_m_sens)
 
 
 ### Extraction of residuals ###
 
-# FFM & FM adjusted REE residuals
+# FFM & FM adjusted
 Dat$rREE_m1 <- REE_m1$residuals
 
-# FFM, FM & ALMI adjusted REE residuals (for sensitivity analysis)
+# FFM, FM & ALMI adjusted (for sensitivity analysis)
 Dat$rREE_m_sens <- REE_m_sens$residuals
 
 
@@ -67,38 +72,45 @@ Dat$rREE_m_sens <- REE_m_sens$residuals
 ## 1) Relationship between measured and predicted REE
 
 # m1: FFM & FM
-Dat$pREE_m1 <- predict(REE_m1, Dat)
-summary(REE_pREE_1 <- lm(REE ~ pREE_m1, data = Dat))
+Dat$pREE_m1 <- predict(REE_m1, Dat) # predicted REE
+
+REE_pREE_1 <- lm(REE ~ pREE_m1, data = Dat)
+summary(REE_pREE_1)
 lm.beta(REE_pREE_1)
 
 # m2: FFM, FM & age
-Dat$pREE_m2 <- predict(REE_m2, Dat)
-summary(REE_pREE_2 <- lm(REE ~ pREE_m2, data = Dat))
+Dat$pREE_m2 <- predict(REE_m2, Dat) # predicted REE
+
+REE_pREE_2 <- lm(REE ~ pREE_m2, data = Dat)
+summary(REE_pREE_2)
 lm.beta(REE_pREE_2)
 
 ## 2) Association between age and residual REE (FFM & FM)
-summary(rREE_m1_age <- lme(rREE_m1 ~ Age, random = ~1|ID, data = Dat))
+
+rREE_m1_age <- lme(rREE_m1 ~ Age, random = ~1|ID, data = Dat)
+summary(rREE_m1_age)
 Confint(rREE_m1_age)
 qqnorm(rREE_m1_age$residuals)
-
 
 ## 3) Association between age groups and REE in the whole sample
 
 # Measured REE
-summary(mREE_age_group <- lme(REE ~ relevel(Age_group, ref = "Group III"), random = ~1|ID, data = Dat))
+mREE_age_group <- lme(REE ~ relevel(Age_group, ref = "Group III"), random = ~1|ID, data = Dat)
+summary(mREE_age_group)
 Confint(mREE_age_group)
 qqnorm(mREE_age_group$residuals)
 
 # Residual REE (FFM & FM)
-summary(rREE_m1_age_group <- lme(rREE_m1 ~ relevel(Age_group, ref = "Group III"), random = ~1|ID, data = Dat))
+rREE_m1_age_group <- lme(rREE_m1 ~ relevel(Age_group, ref = "Group III"), random = ~1|ID, data = Dat)
+summary(rREE_m1_age_group)
 Confint(rREE_m1_age_group)
 qqnorm(rREE_m1_age_group$residuals)
 
 # Sensitivity analysis, residual REE (FFM, FM & ALMI)
-summary(rREE_m_sens_age_group <- lme(rREE_m_sens ~ relevel(Age_group, ref = "Group III"), random = ~1|ID, data = Dat))
+rREE_m_sens_age_group <- lme(rREE_m_sens ~ relevel(Age_group, ref = "Group III"), random = ~1|ID, data = Dat)
+summary(rREE_m_sens_age_group)
 Confint(rREE_m_sens_age_group)
 qqnorm(rREE_m_sens_age_group$residuals)
-
 
 ## 4) Association between mother-daughter status and REE & TEE
 
@@ -106,7 +118,8 @@ qqnorm(rREE_m_sens_age_group$residuals)
 Dat_CALEX <- subset(Dat, CALEX_pair == 1)
 
 # Residual REE
-summary(CALEX_rREE_m1 <- lme(rREE_m1 ~ factor(Code), random = ~1|ID, data = Dat_CALEX))
+CALEX_rREE_m1 <- lme(rREE_m1 ~ factor(Code), random = ~1|ID, data = Dat_CALEX)
+summary(CALEX_rREE_m1)
 Confint(CALEX_rREE_m1)
 qqnorm(CALEX_rREE_m1$residuals)
 
@@ -120,12 +133,14 @@ ICC(ICC_rREE_m1)
 Dat_CALEX_TEE <- subset(Dat, CALEX_pair_DLW == 1)
 
 # Residual REE
-summary(CALEX_TEE_rREE_m1 <- lme(rREE_m1 ~ factor(Code), random = ~1|ID, data = Dat_CALEX_TEE))
+CALEX_TEE_rREE_m1 <- lme(rREE_m1 ~ factor(Code), random = ~1|ID, data = Dat_CALEX_TEE)
+summary(CALEX_TEE_rREE_m1)
 Confint(CALEX_TEE_rREE_m1)
 qqnorm(CALEX_TEE_rREE_m1$residuals)
 
 # TEE adjusted for FFM & FM
-summary(CALEX_TEE_adjusted <- lme(TEE ~ factor(Code) + DXA_FFM + DXA_FM, random = ~1|ID, data = Dat_CALEX_TEE))
+CALEX_TEE_adjusted <- lme(TEE ~ factor(Code) + DXA_FFM + DXA_FM, random = ~1|ID, data = Dat_CALEX_TEE)
+summary(CALEX_TEE_adjusted)
 Confint(CALEX_TEE_adjusted)
 qqnorm(CALEX_TEE_rREE_m1$residuals)
 
@@ -146,60 +161,51 @@ ICC(ICC_rTEE)
 # Data
 Dat_MENO <- subset(Dat, Age_group == "Group III")
 
-
-## 1) Association between menopausal status and REE
+## 1) Association between menopausal status and REE residuals
 
 # Measured REE
-summary(MENO_REE <- lm(REE ~ relevel(Group, ref = "2"), data = Dat_MENO))
+MENO_REE <- lm(REE ~ relevel(Group, ref = "2"), data = Dat_MENO)
+summary(MENO_REE)
 confint(MENO_REE)
 qqnorm(MENO_REE$residuals)
 
 # Residual REE
-summary(MENO_rREE <- lm(rREE_m1 ~ relevel(Group, ref = "2"), data = Dat_MENO))
+MENO_rREE <- lm(rREE_m1 ~ relevel(Group, ref = "2"), data = Dat_MENO)
+summary(MENO_rREE)
 confint(MENO_rREE)
 qqnorm(MENO_rREE$residuals)
 
 # Sensitivity analysis without perimenopausal women
-Dat_MENO_s <- subset(Dat_MENO, M_status == "PRE" | M_status == "POST" | M_status == "MHT")
 
-summary(MENO_REE_s <- lm(rREE_m1 ~ relevel(Group, ref = "2"), data = Dat_MENO_s))
+Dat_MENO_s <- subset(Dat_MENO, M_status %in% c("PRE", "POST", "MHT"))
+
+MENO_REE_s <- lm(rREE_m1 ~ relevel(Group, ref = "2"), data = Dat_MENO_s)
+summary(MENO_REE_s)
 confint(MENO_REE_s)
 qqnorm(MENO_REE_s$residuals)
 
+## 2) Middle-age specific models
 
-## 2) Explorative analyses in the middle-aged subgroup
+# Tissue masses and age
+MENO_m1 <- lm(REE ~ DXA_FFM + DXA_FM + Age, data = Dat_MENO)
+summary(MENO_m1)
+confint(MENO_m1)
+qqnorm(MENO_m1$residuals)
 
-# Age
-summary(rREE_Age <- lm(rREE_m1 ~ Age, data = Dat_MENO))
-lm.beta(rREE_Age)
-qqnorm(rREE_Age$residuals)
+# Menopausal status
+MENO_m2 <- lm(REE ~ DXA_FFM + DXA_FM + Age + relevel(Group, ref = "2"), data = Dat_MENO)
+summary(MENO_m2)
+confint(MENO_m2)
+qqnorm(MENO_m2$residuals)
 
-# Oestradiol (E2), ln-transformed to meet the normality assumption
+# E2
+MENO_m3 <- lm(REE ~ DXA_FFM + DXA_FM + Age + E2, data = Dat_MENO)
+summary(MENO_m3)
+confint(MENO_m3)
+qqnorm(MENO_m3$residuals)
 
-summary(rREE_E2 <- lm(rREE_m1 ~ log(E2), data = Dat_MENO)) # univariable
-lm.beta(rREE_E2)
-qqnorm(rREE_E2$residuals)
-
-summary(rREE_Age_E2 <- lm(rREE_m1 ~ Age + log(E2), data = Dat_MENO)) # age adjusted
-lm.beta(rREE_Age_E2)
-qqnorm(rREE_Age_E2$residuals)
-
-# Follicle-stimulating hormone (FSH)
-
-summary(rREE_FSH <- lm(rREE_m1 ~ FSH, data = Dat_MENO)) # univariable
-lm.beta(rREE_FSH)
-qqnorm(rREE_FSH$residuals)
-
-summary(rREE_Age_FSH <- lm(rREE_m1 ~ Age + FSH, data = Dat_MENO)) # age adjusted
-lm.beta(rREE_Age_FSH)
-qqnorm(rREE_Age_FSH$residuals)
-
-# Body fat percentage (FatP)
-
-summary(rREE_BF <- lm(rREE_m1 ~ FatP, data = Dat_MENO)) # univariable
-lm.beta(rREE_BF)
-qqnorm(rREE_BF$residuals)
-
-summary(rREE_Age_BF <- lm(rREE_m1 ~ Age + FatP, data = Dat_MENO)) # age adjusted
-lm.beta(rREE_Age_BF)
-qqnorm(rREE_Age_BF$residuals)
+# FSH
+MENO_m4 <- lm(REE ~ DXA_FFM + DXA_FM + Age + FSH, data = Dat_MENO)
+summary(MENO_m4)
+confint(MENO_m4)
+qqnorm(MENO_m4$residuals)
